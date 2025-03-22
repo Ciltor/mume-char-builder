@@ -4,7 +4,11 @@ import { SkillTree } from './skill_tree.js';
 import { Build } from './build.js';
 
 export class Character {
+
+  static base_title = document.evaluate("//title", document.head).iterateNext().textContent;
+
   constructor() {
+    this.name           = "";
     this.statGen        = new StatGen(this);
     this.skillTree      = new SkillTree(this);
     this.pracs_avail    = 0;
@@ -16,6 +20,7 @@ export class Character {
     this.level          = 25
 
     // refs to html elements
+    this.name_input       = document.getElementById('name');
     this.faction_btns     = document.getElementById('faction-btns');
     this.race_select      = document.getElementById('race');
     this.subrace_select   = document.getElementById('subrace');
@@ -35,6 +40,8 @@ export class Character {
     this.statGen.setupStats();
 
     if (this.build.loading) {
+      this.name_input.value = this.name;
+      this.updatePageTitle();
       this.skillTree.startFiltered();
       this.skillTree.updatePracsSpent();
       this.skillTree.updateKnowledge();
@@ -173,6 +180,12 @@ export class Character {
 
   setupListeners() {
 
+    // name
+    this.name_input.addEventListener('change', () => {
+      this.name = this.name_input.value;
+      this.updatePageTitle();
+    });
+
     // faction btns
     document.querySelectorAll('#faction-btns button').forEach(button => {
       button.addEventListener('click', (event) => {
@@ -213,5 +226,13 @@ export class Character {
       this.updateLevel();
       this.updateMaxPracs();
     });
+  }
+
+  updatePageTitle() {
+    if (!this.name) {
+      document.title = Character.base_title;
+      return;
+    }
+    document.title = `${this.name} | ${Character.base_title}`;
   }
 }
